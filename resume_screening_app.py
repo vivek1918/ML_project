@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import spacy
+import PyPDF2  # Added library for PDF processing
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -45,12 +46,26 @@ print(report)
 # Streamlit Web App
 st.title("AI-based Resume Screening Tool")
 
-st.write("Upload a resume (in plain text format) to check its suitability:")
+st.write("Upload a resume (in plain text or PDF format) to check its suitability:")
 
-uploaded_file = st.file_uploader("Choose a file", type="txt")
+# Updated to accept both txt and pdf formats
+uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf"])
+
+def extract_text_from_pdf(pdf_file):
+    reader = PyPDF2.PdfReader(pdf_file)
+    text = ""
+    for page_num in range(len(reader.pages)):
+        page = reader.pages[page_num]
+        text += page.extract_text()
+    return text
 
 if uploaded_file is not None:
-    resume_text = uploaded_file.read().decode("utf-8")
+    # Check if the uploaded file is a PDF or TXT
+    if uploaded_file.name.endswith(".txt"):
+        resume_text = uploaded_file.read().decode("utf-8")
+    elif uploaded_file.name.endswith(".pdf"):
+        resume_text = extract_text_from_pdf(uploaded_file)
+    
     st.write("Uploaded Resume:")
     st.write(resume_text)
 
