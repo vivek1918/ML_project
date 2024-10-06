@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import spacy
 import PyPDF2  # Added library for PDF processing
+import re  # For regular expressions
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -59,6 +60,23 @@ def extract_text_from_pdf(pdf_file):
         text += page.extract_text()
     return text
 
+# Function to extract skills from the resume text
+def extract_skills(text):
+    # Define a list of common skills
+    skill_keywords = [
+        'Python', 'Java', 'C++', 'SQL', 'JavaScript', 'HTML', 'CSS', 'Machine Learning', 
+        'Data Science', 'Deep Learning', 'NLP', 'Django', 'Flask', 'React', 'Node.js', 'Git', 'AWS',
+        'Docker', 'Kubernetes', 'TensorFlow', 'PyTorch', 'Excel', 'Tableau', 'Power BI', 'Figma'
+    ]
+    
+    # Use regex to find skill keywords in the text (case insensitive)
+    found_skills = []
+    for skill in skill_keywords:
+        if re.search(r'\b' + skill + r'\b', text, re.IGNORECASE):
+            found_skills.append(skill)
+    
+    return found_skills
+
 if uploaded_file is not None:
     # Check if the uploaded file is a PDF or TXT
     if uploaded_file.name.endswith(".txt"):
@@ -66,8 +84,13 @@ if uploaded_file is not None:
     elif uploaded_file.name.endswith(".pdf"):
         resume_text = extract_text_from_pdf(uploaded_file)
     
-    st.write("Uploaded Resume:")
-    st.write(resume_text)
+    #st.write("Uploaded Resume Text:")
+    #st.write(resume_text)
+
+    # Extract skills from the resume
+    skills = extract_skills(resume_text)
+    st.write("Extracted Skills:")
+    st.write(", ".join(skills) if skills else "No skills found.")
 
     # Preprocess and vectorize the uploaded resume
     cleaned_resume = preprocess_text(resume_text)
